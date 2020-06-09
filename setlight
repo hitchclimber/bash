@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# get value of brightness:
+
+light=$(cat /sys/class/backlight/acpi_video0/brightness)
+
+if (( light >= 0 && light <= 15 )); then
+	case $1 in
+	-i | --increase)	let "new=light+$2"
+				echo $new > /sys/class/backlight/acpi_video0/brightness
+				echo "Brightness increased to $new" | while read OUTPUT; do notify-send --expire-time=5000 "$OUTPUT"; done
+				;;
+	-d | --decrease)	let "new=light-$2"
+				echo $new > /sys/class/backlight/acpi_video0/brightness
+				echo "Brightness decreased to $new" | while read OUTPUT; do notify-send --expire-time=5000 "$OUTPUT"; done
+				;;
+	-s | --status)		echo $light;;
+	*)			echo -n "Argument error"
+				exit 1;;
+	esac
+else
+	echo "Brightness out of bounds [0-15]: $light" | while read OUPUT; do notify-send --expire-time=5000 "$OUTPUT"; done
+	exit 0
+fi
